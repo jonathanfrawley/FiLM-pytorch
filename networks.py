@@ -118,25 +118,36 @@ class FiLM(nn.Module):
         
     def forward(self, x, question):
         batch_size = x.size(0)
-        
         x = self.feature_extractor(x)
+        print(f'1: {x.size()}')
         film_vector = self.film_generator(question).view(
             batch_size, self.n_res_blocks, 2, self.n_channels)
+        print(f'2: {x.size()}')
+        print(f'3: {question.size()}')
         
         d = x.size(2)
+        print(f'4: {d.size()}')
         coordinate = torch.arange(-1, 1 + 0.00001, 2 / (d-1)).cuda()
+        print(f'5: {coordinate.size()}')
         coordinate_x = coordinate.expand(batch_size, 1, d, d)
+        print(f'6: {coordinate_x.size()}')
         coordinate_y = coordinate.view(d, 1).expand(batch_size, 1, d, d)
+        print(f'7: {coordinate_y.size()}')
         
         for i, res_block in enumerate(self.res_blocks):
             beta = film_vector[:, i, 0, :]
             gamma = film_vector[:, i, 1, :]
+            print(f'8: {beta.size()}')
+            print(f'9: {gamma.size()}')
             
             x = torch.cat([x, coordinate_x, coordinate_y], 1)
+            print(f'10: {x.size()}')
             x = res_block(x, beta, gamma)
+            print(f'11: {x.size()}')
         
         # feature = x
         x = self.classifier(x)
+        print(f'12: {x.size()}')
         
         return x#, feature
 
